@@ -226,32 +226,38 @@ NSString* const kCDVAssetsLibraryPrefix = @"assets-library://";
     if (!testUri) {
         result = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:ENCODING_ERR];
     } else if ([testUri isFileURL]) {
-        NSFileManager* fileMgr = [[NSFileManager alloc] init];
-        NSString* path = [testUri path];
-        // NSLog(@"url path: %@", path);
-        BOOL isDir = NO;
-        // see if exists and is file or dir
-        BOOL bExists = [fileMgr fileExistsAtPath:path isDirectory:&isDir];
-        if (bExists) {
-            // see if it contains docs path or temp path
-            NSString* foundFullPath = nil;
-            if ([path hasPrefix:self.appDocsPath]) {
-                foundFullPath = self.appDocsPath;
-            } else if ([path hasPrefix:self.appTempPath]) {
-                foundFullPath = self.appTempPath;
+        [self.commandDelegate runInBackground:^{
+            CDVPluginResult* result = nil;
+
+            NSFileManager* fileMgr = [[NSFileManager alloc] init];
+            NSString* path = [testUri path];
+            // NSLog(@"url path: %@", path);
+            BOOL isDir = NO;
+            // see if exists and is file or dir
+            BOOL bExists = [fileMgr fileExistsAtPath:path isDirectory:&isDir];
+            if (bExists) {
+                // see if it contains docs path or temp path
+                NSString* foundFullPath = nil;
+                if ([path hasPrefix:self.appDocsPath]) {
+                    foundFullPath = self.appDocsPath;
+                } else if ([path hasPrefix:self.appTempPath]) {
+                    foundFullPath = self.appTempPath;
+                }
+
+                if (foundFullPath == nil) {
+                    // error SECURITY_ERR - not one of the two paths types supported
+                    result = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:SECURITY_ERR];
+                } else {
+                    NSDictionary* fileSystem = [self getDirectoryEntry:path isDirectory:isDir];
+                    result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:fileSystem];
+                }
+            } else {
+                // return NOT_FOUND_ERR
+                result = [CDVPluginResult resultWithStatus:CDVCommandStatus_IO_EXCEPTION messageAsInt:NOT_FOUND_ERR];
             }
 
-            if (foundFullPath == nil) {
-                // error SECURITY_ERR - not one of the two paths types supported
-                result = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:SECURITY_ERR];
-            } else {
-                NSDictionary* fileSystem = [self getDirectoryEntry:path isDirectory:isDir];
-                result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:fileSystem];
-            }
-        } else {
-            // return NOT_FOUND_ERR
-            result = [CDVPluginResult resultWithStatus:CDVCommandStatus_IO_EXCEPTION messageAsInt:NOT_FOUND_ERR];
-        }
+            [self.commandDelegate sendPluginResult:result callbackId:command.callbackId];
+        }];
     } else if ([strUri hasPrefix:@"assets-library://"]) {
         NSDictionary* fileSystem = [self getDirectoryEntry:strUri isDirectory:NO];
         result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:fileSystem];
