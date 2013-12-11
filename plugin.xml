@@ -1,14 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
 xmlns:android="http://schemas.android.com/apk/res/android"
-           id="org.apache.cordova.file"
-      version="0.2.5">
+           id="com.silverorange.file"
+      version="0.2.6">
     <name>File</name>
-    <description>Cordova File Plugin</description>
+    <description>silverorange Cordova File Plugin</description>
     <license>Apache 2.0</license>
     <keywords>cordova,file</keywords>
-    <repo>https://git-wip-us.apache.org/repos/asf/cordova-plugin-file.git</repo>
+    <repo>https://github.com/silverorange/cordova-plugin-file.git</repo>
     <issue>https://issues.apache.org/jira/browse/CB/component/12320651</issue>
 
     <js-module src="www/DirectoryEntry.js" name="DirectoryEntry">
